@@ -226,11 +226,15 @@ func requestPart(ctx context.Context, next Proxy, request *Request, sequential b
 	localCtx, cancel := context.WithCancel(ctx)
 
 	var copyRequest *Request
-	if sequential {
-		copyRequest = CloneRequest(request)
-	}
+	var in *Response
+	var err error
 
-	in, err := next(localCtx, request)
+	copyRequest = CloneRequest(request)
+	if sequential {
+		in, err = next(localCtx, request)
+	} else {
+		in, err = next(localCtx, copyRequest)
+	}
 
 	if sequential {
 		*request = *copyRequest
